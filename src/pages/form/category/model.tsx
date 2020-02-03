@@ -47,6 +47,8 @@ const Model: ModelType = {
       //   message.success('get成功');
     },
     *addCategory({ payload }, { call, put }) {
+      console.log("start call dispatch addCategory")
+      console.log("addcategory : ", payload)
       const response = yield call(addOrUpdateCategories, payload);
       console.log("response data : ", response)
       yield put({
@@ -55,8 +57,8 @@ const Model: ModelType = {
           tableData: [response.data]
         },
       });
-      //   console.log("cat list response: ", response)
-      //   message.success('get成功');
+        console.log("cat list response: ", response)
+        // message.success('get成功');
     },
   },
 

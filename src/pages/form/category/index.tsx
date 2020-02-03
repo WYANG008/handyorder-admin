@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-import CategoryForm from './components/CategoryForm';
+import CategoryTable from './components/CategoryTable';
 import { Dispatch } from 'redux';
 import { connect } from 'dva';
+import {Form} from 'antd';
+import {Card} from 'antd';
 import { ServerCategoryList } from './data.d';
 
 interface CategoryFormProps {
@@ -46,19 +48,19 @@ class Category extends Component<CategoryFormProps, CategoryState>  {
 
 
   render() {
-    const { formCategory, dispatch,submitting, loading } = this.props;
-    console.log("############## loading : ", loading);
-    console.log(formCategory.tableData);
+    const { formCategory,loading, dispatch } = this.props;
 
     return (
-      <CategoryForm tableData={formCategory.tableData.map(e => {
+      <Card title="种类管理" bordered={false}>
+      <CategoryTable dispatch={dispatch} value={formCategory.tableData.map(e => {
 
         return {
           key: e.categoryId,
           categoryName:e.categoryName,
           type: e.categoryType
         }
-      })} dispatch={dispatch} submitting = {submitting}/>
+      })}/>
+      </Card>
 
     );
   }
@@ -77,6 +79,6 @@ export default connect(
   }) => ({
     formCategory,
     loading: loading.effects['formCategory/getCategories'],
-    // submitting: loading.effects['formCategory/getCategories'],
+    submitting: loading.effects['formCategory/addCategory'],
   }),
 )(Category);

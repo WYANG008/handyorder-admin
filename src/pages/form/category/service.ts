@@ -8,6 +8,7 @@ export async function getCategories(params: any) {
 }
 
 export async function addOrUpdateCategories(params: any) {
+  console.log("requesting server addOrupdate, ", params)
   return request('/server/api/seller/category/addOrUpdate', {
     method: 'POST',
     data: params,
