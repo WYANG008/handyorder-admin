@@ -47,7 +47,7 @@ const Model: ModelType = {
       //   message.success('get成功');
     },
     *addCategory({ payload }, { call, put }) {
-      console.log("start call dispatch addCategory")
+      // console.log("start call dispatch addCategory")
       console.log("addcategory : ", payload)
       const response = yield call(addOrUpdateCategories, payload);
       console.log("response data : ", response)

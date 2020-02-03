@@ -43,23 +43,18 @@ class Category extends Component<CategoryFormProps, CategoryState>  {
   //   clearTimeout(this.timeoutId);
   // }
 
-
-  // const[error, setError] = useState<ErrorField[]> ([]);
-
-
   render() {
     const { formCategory,loading, dispatch } = this.props;
 
     return (
       <Card title="种类管理" bordered={false}>
-      <CategoryTable dispatch={dispatch} value={formCategory.tableData.map(e => {
-
-        return {
-          key: e.categoryId,
-          categoryName:e.categoryName,
-          type: e.categoryType
-        }
-      })}/>
+        <CategoryTable dispatch={dispatch} value={formCategory.tableData.map(e => {
+          return {
+            key: e.categoryId,
+            categoryName:e.categoryName,
+            type: e.categoryType
+          }
+        })}/>
       </Card>
 
     );
@@ -79,6 +74,6 @@ export default connect(
   }) => ({
     formCategory,
     loading: loading.effects['formCategory/getCategories'],
-    submitting: loading.effects['formCategory/addCategory'],
+    // submitting: loading.effects['formCategory/addCategory'],
   }),
 )(Category);
