@@ -1,8 +1,8 @@
 import { AnyAction, Reducer } from 'redux';
 import { EffectsCommandMap, Subscription } from 'dva';
 import { message } from 'antd';
-import { getCategories, addOrUpdateCategories } from './service';
-import { ServerCategoryList } from './data.d';
+import { getCategories, addOrUpdateCategories, removeCategory, deleteCategory } from './service';
+import { ServerCategoryList,TableFormDateType } from './data.d';
 
 export type Effect = (
   action: AnyAction,
@@ -11,10 +11,13 @@ export type Effect = (
 
 export interface ModelType {
   namespace: string;
-  state: {};
+  state: {
+    tableData: TableFormDateType[];
+  };
   effects: {
     getCategories: Effect;
     addCategory: Effect;
+    removeCategory: Effect;
   };
 
   reducers: {
@@ -47,17 +50,27 @@ const Model: ModelType = {
       //   message.success('get成功');
     },
     *addCategory({ payload }, { call, put }) {
-      // console.log("start call dispatch addCategory")
-      console.log("addcategory : ", payload)
-      const response = yield call(addOrUpdateCategories, payload);
-      console.log("response data : ", response)
 
+      const response = yield call(addOrUpdateCategories, payload);
       yield put({
         type: 'addOrUpdateCategories',
-        payload: {
-          tableData: [response.data]
-        },
+        payload: response.data,
       });
+        // console.log("cat list response: ", response)
+        // message.success('get成功');
+    },
+    *removeCategory({ payload }, { call, put }) {
+      // console.log("start call dispatch addCategory")
+      console.log("removeCategory : ", payload)
+      const response = yield call(removeCategory, payload);
+      console.log("response data : ", response)
+      // if (response.code == 0) {
+        yield put({
+          type: 'removeCategory',
+          payload: response.data,
+        });
+      // }
+
         // console.log("cat list response: ", response)
         // message.success('get成功');
     },
@@ -65,25 +78,59 @@ const Model: ModelType = {
 
   reducers: {
     categoryList(state, { payload }) {
-      console.log(state);
-      console.log("category list returned state : ", {
-        ...state,
-        ...payload,
-      } )
+
       return {
         ...state,
         ...payload,
       };
     },
     addOrUpdateCategories(state, { payload }) {
-      console.log("returned state : ", {
-        ...state,
-        ...payload,
-      } )
       return {
         ...state,
-        ...payload,
-      };
+        tableData: [...state?.tableData,...payload]
+      }
+
+      // let newState = state;
+      // if (newState && newState.tableData.length > 0){
+      //   let duplicated = false;
+       
+      //   newState.tableData = newState.tableData.map(e => {
+      //     if (e.categoryId == payload.categoryId){
+      //       duplicated = true;
+      //       return payload
+      //     } else {
+      //       return e
+      //     }
+      //   } )
+
+      //   if (!duplicated){
+      //     newState.tableData = newState.tableData.concat(payload)
+      //   }
+
+        
+
+      // } else {
+      //   newState = {
+      //     tableData: [payload]
+      //   }
+       
+      // }
+
+      // return {
+      //   ...state,
+      //   ...newState,
+      // }
+    },
+    removeCategory(state, { payload }) {
+      console.log("current state", state);
+      console.log("payload :", payload);
+      // let newState = state;
+      if (state && state.tableData.length > 0){
+        state.tableData = state.tableData.filter(e => e.categoryId != payload.key )
+      }
+      return {
+        ...state
+      }
     },
 
   },

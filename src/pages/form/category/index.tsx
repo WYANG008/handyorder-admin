@@ -17,7 +17,6 @@ interface CategoryState {
 
 }
 
-
 class Category extends Component<CategoryFormProps, CategoryState>  {
 
   state: CategoryState = {};
@@ -34,21 +33,20 @@ class Category extends Component<CategoryFormProps, CategoryState>  {
     console.log("reqFreq: ", this.reqRef)
   }
 
-  // componentWillUnmount() {
-  //   const { dispatch } = this.props;
-  //   dispatch({
-  //     type: 'formCategory/clear',
-  //   });
-  //   cancelAnimationFrame(this.reqRef);
-  //   clearTimeout(this.timeoutId);
-  // }
+  componentWillUpdate(nextProps, nextState) {
+    console.log("next props", nextProps)
+    console.log("next states", nextState)
+    // if (nextState.open == true && this.state.open == false) {
+    //   this.props.onWillOpen();
+    // }
+  }
 
   render() {
     const { formCategory,loading, dispatch } = this.props;
 
     return (
       <Card title="种类管理" bordered={false}>
-        <CategoryTable dispatch={dispatch} value={formCategory.tableData.map(e => {
+        <CategoryTable loading={loading} dispatch={dispatch} value={formCategory.tableData.map(e => {
           return {
             key: e.categoryId,
             categoryName:e.categoryName,

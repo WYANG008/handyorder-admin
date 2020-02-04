@@ -9,3 +9,11 @@ interface ServerCategory {
 export interface ServerCategoryList {
     tableData: ServerCategory[];
 }
+
+interface TableFormDateType {
+  key: string;
+  categoryName?: string;
+  type?: string;
+  isNew?: boolean;
+  editable?: boolean;
+}

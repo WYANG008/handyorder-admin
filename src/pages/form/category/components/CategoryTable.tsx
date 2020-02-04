@@ -1,26 +1,21 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Divider, Input, Popconfirm, Table, message, Modal, Form } from 'antd';
-import React, { FC, useState } from 'react';
+import React from 'react';
 import { Dispatch } from 'redux';
 import styles from '../style.less';
-import { FormInstance } from 'antd/es/form';
-// import { FormInstance } from 'antd/lib/form';
+import {TableFormDateType} from '../data.d';
 
-interface TableFormDateType {
-  key: string;
-  categoryName?: string;
-  type?: string;
-  isNew?: boolean;
-  editable?: boolean;
-}
+
 interface TableFormProps {
   // form: FormInstance;
+  loading: boolean;
   dispatch: Dispatch<any>;
   value: TableFormDateType[];
   onChange?: (value: TableFormDateType[]) => void;
 }
 
 interface AddedCategory {
+  key: number | null;
   categoryName: string;
   type: string;
 }
@@ -30,7 +25,6 @@ interface TableFormState {
   loading: boolean;
   modalVisable: boolean;
   index: number;
-  data: TableFormDateType[];
   cacheOriginData: any;
   addedCategory: AddedCategory;
 }
@@ -46,9 +40,10 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
       modalVisable: false,
 			loading: false,
       index: 0,
-      data: this.props.value,
+      // data: this.props.value,
       cacheOriginData: {},
       addedCategory: {
+        key: null,
         categoryName: "",
         type: ""
       }
@@ -73,7 +68,8 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
 				this.setState({
 					addedCategory: {
             categoryName: value,
-            type: this.state.addedCategory.type
+            type: this.state.addedCategory.type,
+            key: this.state.addedCategory.key
           }
 				});
 				break;
@@ -81,6 +77,7 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
         this.setState({
 					addedCategory: {
             categoryName: this.state.addedCategory.categoryName,
+            key: this.state.addedCategory.key,
             type: value
           }
 				});
@@ -90,160 +87,105 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
 		}
 	};
 
-  private getRowByKey = (key: string, newData?: TableFormDateType[]) => {
-    return (newData || this.state.data)?.filter(item => item.key === key)[0];
-  };
 
-  private toggleEditable = (e: React.MouseEvent | React.KeyboardEvent, key: string) => {
+
+  private updateRecord = (e: React.MouseEvent | React.KeyboardEvent, key: string) => {
     e.preventDefault();
-    const newData = this.state.data?.map(item => ({ ...item }));
-    const target = this.getRowByKey(key, newData);
+
+    const target = this.props.value?.filter(item => item.key === key)[0];
     if (target) {
-      // 进入编辑状态时保存原始数据
-      if (!target.editable) {
-
-        this.state.cacheOriginData[key] = { ...target };
-        // this.state.cacheOriginData
-        // this.setState({
-        //   cacheOriginData: cacheOriginData
-        // });
-      }
-      target.editable = !target.editable;
-      // setData(newData);
+      console.log("key", key)
+      console.log("target, ", target )
       this.setState({
-        data: newData
+        addedCategory: {
+          key: target.key? Number(target.key) : null,
+          categoryName: target.categoryName || "",
+          type: target.type||""
+        }
       })
-    }
-  };
-
-
-  private remove = (key: string) => {
-    const newData = this.state.data?.filter(item => item.key !== key) as TableFormDateType[];
-    // setData(newData);
-    this.setState({
-      data: newData
-    })
-    if (this.props.onChange) {
-      this.props.onChange(newData);
-    }
-  };
-
-  private handleFieldChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    fieldName: string,
-    key: string,
-  ) => {
-    const newData = [...(this.state.data as TableFormDateType[])];
-    const target = this.getRowByKey(key, newData);
-    if (target) {
-      target[fieldName] = e.target.value;
-      // setData(newData);
       this.setState({
-        data: newData
+        
+        modalVisable:true
       })
+      console.log("nw state", this.state)
     }
   };
 
-  private saveRow = (e: React.MouseEvent | React.KeyboardEvent, key: string) => {
 
-    console.log("key ", key);
-    // console.log("target ",target)
-    e.persist();
-    // setLoading(true);
-    this.setState({
-      loading: true
-    })
-    setTimeout(() => {
-      if (this.state.clickedCancel) {
-        // setClickedCancel(false);
-        this.setState({
-          clickedCancel: false
-        })
-        return;
-      }
-      const target = this.getRowByKey(key) || ({} as any);
-      console.log("target ",target)
-      if (!target.categoryName || !target.type) {
-        message.error('请填写完整成员信息。');
-        (e.target as HTMLInputElement).focus();
+  handleOk = () => {
+    if(this.state.addedCategory.categoryName && this.state.addedCategory.type){
+      const payload = {
+        categoryName: this.state.addedCategory.categoryName,
+        categoryType: this.state.addedCategory.type,
+        categoryId: this.state.addedCategory.key
+      };
+      this.setState({
+        loading: true
+      })
+      console.log("paylaod ###########",payload)
+      this.props.dispatch({
+        type: 'formCategory/addCategory',
+        payload:payload
+      });
+      this.setState({
+        addedCategory: {
+          categoryName:"",
+          type: "",
+          key: null
+        }
+      });
+
+      setTimeout(() => {
+        this.props.dispatch({
+          type: 'formCategory/getCategories'
+        });
         this.setState({
           loading: false
         })
-        return;
-      }
-      delete target.isNew;
-      this.toggleEditable(e, key);
-      if (this.props.onChange) {
-        this.props.onChange(this.state.data as TableFormDateType[]);
-      }
+      }, 500);
+    }
+    this.setState({
+      modalVisable: false,
+    });
+  };
+
+  private remove = (key: string) => {
+    this.setState({
+      loading: true
+    })
+    this.props.dispatch({
+      type: 'formCategory/removeCategory',
+      payload:Number(key)
+    });
+    // this.setState({
+    //   loading: false
+    // })
+    setTimeout(() => {
+      this.props.dispatch({
+        type: 'formCategory/getCategories'
+      });
       this.setState({
         loading: false
       })
     }, 500);
   };
 
+  // private handleFieldChange = (
+  //   e: React.ChangeEvent<HTMLInputElement>,
+  //   fieldName: string,
+  //   key: string,
+  // ) => {
+  //   // const newData = [...(this.state.data as TableFormDateType[])];
+  //   const target = this.props.value?.filter(item => item.key === key)[0];
+  //   if (target) {
+  //     target[fieldName] = e.target.value;
+  //     // setData(newData);
+  //     this.setState({
+  //       data: newData
+  //     })
+  //   }
+  // };
 
-  private cancel = (e: React.MouseEvent, key: string) => {
-    // setClickedCancel(true);
-    this.setState({
-      clickedCancel: true
-    })
-    e.preventDefault();
-    const newData = [...(this.state.data as TableFormDateType[])];
-    // 编辑前的原始数据
-    let cacheData = [];
-    cacheData = newData.map(item => {
-      if (item.key === key) {
-        if (this.state.cacheOriginData[key]) {
-          const originItem = {
-            ...item,
-            ...this.state.cacheOriginData[key],
-            editable: false,
-          };
-          delete this.state.cacheOriginData[key];
-          // setCacheOriginData(cacheOriginData);
-          this.setState({
-            cacheOriginData: this.state.cacheOriginData
-          })
-          return originItem;
-        }
-      }
-      return item;
-    });
-    // setData(cacheData);
-    this.setState({
-      data: cacheData,
-      clickedCancel: false
-    })
-    // setClickedCancel(false);
-  };
-
-  handleOk = () => {
-    console.log("handleOk")
-    if(this.state.addedCategory.categoryName && this.state.addedCategory.type){
-      const payload = {
-        categoryName: this.state.addedCategory.categoryName,
-        categoryType: this.state.addedCategory.type
-      };
-      console.log("dispatch addCategory with payload ",payload)
-      this.props.dispatch({
-        type: 'formCategory/addCategory',
-        payload:{
-          categoryName: this.state.addedCategory.categoryName,
-          categoryType: this.state.addedCategory.type
-        }
-      });
-      this.setState({
-        addedCategory: {
-          categoryName:"",
-          type: ""
-        }
-      });
-    }
-    this.setState({
-      modalVisable: false,
-    });
-  };
 
   handleCancel = e => {
     console.log(e);
@@ -260,17 +202,6 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
       key: 'categoryName',
       width: '30%',
       render: (text: string, record: TableFormDateType) => {
-        if (record.editable) {
-          return (
-            <Input
-              value={text}
-              autoFocus
-              onChange={e => this.handleFieldChange(e, 'categoryName', record.key)}
-              onKeyPress={e => this.handleKeyPress(e, record.key)}
-              placeholder="categoryName"
-            />
-          );
-        }
         return text;
       },
     },
@@ -280,16 +211,6 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
       key: 'type',
       width: '30%',
       render: (text: string, record: TableFormDateType) => {
-        if (record.editable) {
-          return (
-            <Input
-              value={text}
-              onChange={e => this.handleFieldChange(e, 'type', record.key)}
-              onKeyPress={e => this.handleKeyPress(e, record.key)}
-              placeholder="type"
-            />
-          );
-        }
         return text;
       },
     },
@@ -301,29 +222,10 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
         if (!!record.editable && this.state.loading) {
           return null;
         }
-        if (record.editable) {
-          if (record.isNew) {
-            return (
-              <span>
-                <a onClick={e => this.saveRow(e, record.key)}>添加</a>
-                <Divider type="vertical" />
-                <Popconfirm title="是否要删除此行？" onConfirm={() => this.remove(record.key)}>
-                  <a>删除</a>
-                </Popconfirm>
-              </span>
-            );
-          }
-          return (
-            <span>
-              <a onClick={e => this.saveRow(e, record.key)}>保存</a>
-              <Divider type="vertical" />
-              <a onClick={e => this.cancel(e, record.key)}>取消</a>
-            </span>
-          );
-        }
+
         return (
           <span>
-            <a onClick={e => this.toggleEditable(e, record.key)}>编辑</a>
+            <a onClick={e => this.updateRecord(e, record.key)}>编辑</a>
             <Divider type="vertical" />
             <Popconfirm title="是否要删除此行？" onConfirm={() => this.remove(record.key)}>
               <a>删除</a>
