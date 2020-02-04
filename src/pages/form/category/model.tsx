@@ -51,27 +51,35 @@ const Model: ModelType = {
       console.log("addcategory : ", payload)
       const response = yield call(addOrUpdateCategories, payload);
       console.log("response data : ", response)
+
       yield put({
         type: 'addOrUpdateCategories',
         payload: {
           tableData: [response.data]
         },
       });
-        console.log("cat list response: ", response)
+        // console.log("cat list response: ", response)
         // message.success('get成功');
     },
   },
 
   reducers: {
     categoryList(state, { payload }) {
-      // console.log("object", obj )
+      console.log(state);
+      console.log("category list returned state : ", {
+        ...state,
+        ...payload,
+      } )
       return {
         ...state,
         ...payload,
       };
     },
     addOrUpdateCategories(state, { payload }) {
-      // console.log("object", obj )
+      console.log("returned state : ", {
+        ...state,
+        ...payload,
+      } )
       return {
         ...state,
         ...payload,

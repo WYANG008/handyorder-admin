@@ -233,6 +233,12 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
           categoryType: this.state.addedCategory.type
         }
       });
+      this.setState({
+        addedCategory: {
+          categoryName:"",
+          type: ""
+        }
+      });
     }
     this.setState({
       modalVisable: false,
