@@ -6,7 +6,8 @@ import themePluginConfig from './themePluginConfig';
 const { pwa } = defaultSettings; // preview.pro.ant.design only do not use in your production ;
 // preview.pro.ant.design 专用环境变量，请不要在你的项目中使用它。
 
-const { ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION } = process.env;
+// console.log("########### process env", process.env)
+const { ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION, MOCK } = process.env;
 const isAntDesignProPreview = ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION === 'site';
 const plugins: IPlugin[] = [
   ['umi-plugin-antd-icon-config', {}],
@@ -142,75 +143,21 @@ export default {
               ],
             },
             {
-              path: '/form',
+              path: '/list',
               icon: 'form',
-              name: 'form',
+              name: 'list',
               routes: [
                 {
                   name: 'category',
                   icon: 'smile',
-                  path: '/form/category',
-                  component: './form/category',
+                  path: '/list/category',
+                  component: './list/category',
                 },
                 {
-                  name: 'step-form',
+                  name: 'product',
                   icon: 'smile',
-                  path: '/form/step-form',
-                  component: './form/step-form',
-                },
-                {
-                  name: 'advanced-form',
-                  icon: 'smile',
-                  path: '/form/advanced-form',
-                  component: './form/advanced-form',
-                },
-              ],
-            },
-            {
-              path: '/list',
-              icon: 'table',
-              name: 'list',
-              routes: [
-                {
-                  path: '/list/search',
-                  name: 'search-list',
-                  component: './list/search',
-                  routes: [
-                    {
-                      path: '/list/search',
-                      redirect: '/list/search/articles',
-                    },
-                    {
-                      name: 'articles',
-                      icon: 'smile',
-                      path: '/list/search/articles',
-                      component: './list/search/articles',
-                    },
-                    {
-                      name: 'projects',
-                      icon: 'smile',
-                      path: '/list/search/projects',
-                      component: './list/search/projects',
-                    },
-                    {
-                      name: 'applications',
-                      icon: 'smile',
-                      path: '/list/search/applications',
-                      component: './list/search/applications',
-                    },
-                  ],
-                },
-                {
-                  name: 'basic-list',
-                  icon: 'smile',
-                  path: '/list/basic-list',
-                  component: './list/basic-list',
-                },
-                {
-                  name: 'card-list',
-                  icon: 'smile',
-                  path: '/list/card-list',
-                  component: './list/card-list',
+                  path: '/list/product',
+                  component: './list/product',
                 },
               ],
             },
@@ -343,6 +290,7 @@ export default {
   define: {
     ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION:
       ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION || '', // preview.pro.ant.design only do not use in your production ; preview.pro.ant.design 专用环境变量，请不要在你的项目中使用它。
+    MOCK_ENABLED : MOCK == 'true',
   },
   ignoreMomentLocale: true,
   lessLoaderOptions: {
@@ -390,4 +338,7 @@ export default {
       pathRewrite: { '^/server': '' },
     },
   },
+  block:{
+    defaultGitUrl: 'https://github.com/ant-design/pro-blocks',
+  }
 } as IConfig;

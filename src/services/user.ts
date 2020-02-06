@@ -5,7 +5,6 @@ export async function query(): Promise<any> {
 }
 
 export async function queryCurrentUser(): Promise<any> {
-  console.log("start fetchig curretn user")
   return request('/server/api/seller/getCurrentUser', {method: "GET"});
 }
 
