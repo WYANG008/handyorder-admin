@@ -6,7 +6,7 @@ import ProTable, { ProColumns, ActionType } from '@ant-design/pro-table';
 import CreateForm from './components/CreateForm';
 import UpdateForm, { FormValueType } from './components/UpdateForm';
 import { TableListItem } from './data';
-import { queryProduct, updateRule, addRule, removeProduct } from './service';
+import { queryProduct, updateProduct, addProduct, removeProduct } from './service';
 
 /**
  * 添加节点
@@ -15,8 +15,14 @@ import { queryProduct, updateRule, addRule, removeProduct } from './service';
 const handleAdd = async (fields: FormValueType) => {
   const hide = message.loading('正在添加');
   try {
-    await addRule({
+    await addProduct({
       productName: fields.productName,
+      productPrice: fields.productPrice,
+      productStock: fields.productStock,
+      productDescription: fields.productDescription,
+      productIcon: fields.productIcon,
+      productStatus: fields.productStatus,
+      categoryType: fields.categoryType
     });
     hide();
     message.success('添加成功');
@@ -33,17 +39,19 @@ const handleAdd = async (fields: FormValueType) => {
  * @param fields
  */
 const handleUpdate = async (fields: FormValueType) => {
+  console.log("########## update fields, ", fields)
   const hide = message.loading('正在配置');
-  console.log("after hide", {
-    productId: fields.productId + "",
-    productName: fields.productName,
-    
-  })
+  // console.log("after hide", )
   try {
-    await updateRule({
-      productId: fields.productId + "",
+    await updateProduct({
+      productId: fields.productId,
       productName: fields.productName,
-      
+      productPrice: fields.productPrice,
+      productStock: fields.productStock,
+      productDescription: fields.productDescription,
+      productIcon: fields.productIcon,
+      productStatus: fields.productStatus,
+      categoryType: fields.categoryType
     });
     hide();
 
@@ -62,6 +70,7 @@ const handleUpdate = async (fields: FormValueType) => {
  */
 const handleRemove = async (selectedRows: TableListItem[]) => {
   const hide = message.loading('正在删除');
+  console.log(">>>>>>>>>>>", selectedRows);
   if (!selectedRows) return true;
   try {
     await removeProduct({
@@ -136,13 +145,15 @@ const TableList: React.FC<{}> = () => {
           </a>
           <Divider type="vertical" />
           <a
-           onClick={async e => {
-           
-              await handleRemove([{productId: record.productId}] as any);
-
+            onClick={async e => {
+              const success = await handleRemove([record] as any);
+              if (success) {
+                if (actionRef.current) {
+                  actionRef.current.reload();
+                }
+              }
             }
-          }
-        
+            }
           >
             删除
           </a>
@@ -163,7 +174,7 @@ const TableList: React.FC<{}> = () => {
         params={{
           sorter,
         }}
-       
+
         toolBarRender={(action, { selectedRows }) => [
           <Button type="primary" onClick={() => handleModalVisible(true)}>
             <PlusOutlined /> 新建
@@ -218,7 +229,7 @@ const TableList: React.FC<{}> = () => {
       {formValues && Object.keys(formValues).length ? (
         <UpdateForm
           onSubmit={async value => {
-       
+
             const success = await handleUpdate(value);
             if (success) {
               handleModalVisible(false);

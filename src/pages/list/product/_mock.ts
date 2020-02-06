@@ -78,7 +78,10 @@ function getRule(req: Request, res: Response, u: string) {
     current: parseInt(`${params.currentPage}`, 10) || 1,
   };
 
+  console.log("mocked return")
+  console.log(result)
   return res.json(result);
+
 }
 
 function postRule(req: Request, res: Response, u: string, b: Request) {
