@@ -1,7 +1,7 @@
 import { AnyAction, Reducer } from 'redux';
 import { EffectsCommandMap, Subscription } from 'dva';
 import { message } from 'antd';
-import { getCategories, addOrUpdateCategories, removeCategory, deleteCategory } from './service';
+import { getCategories, addOrUpdateCategories, deleteCategoryServicePost } from './service';
 import { ServerCategoryList,TableFormDateType } from './data';
 
 export type Effect = (
@@ -9,11 +9,13 @@ export type Effect = (
   effects: EffectsCommandMap & { select: <T>(func: (state: {}) => T) => T },
 ) => void;
 
+interface StateType {
+  tableData: TableFormDateType[];
+}
+
 export interface ModelType {
   namespace: string;
-  state: {
-    tableData: TableFormDateType[];
-  };
+  state: StateType;
   effects: {
     getCategories: Effect;
     addCategory: Effect;
@@ -21,25 +23,28 @@ export interface ModelType {
   };
 
   reducers: {
-    categoryList: Reducer<ServerCategoryList>;
-    addOrUpdateCategories: Reducer<ServerCategoryList>;
+    categoryList: Reducer<StateType>;
+    addOrUpdateCategories: Reducer<StateType>;
+    removeCategory: Reducer<StateType>;
   };
   // subscriptions: { setup: Subscription };
 }
 
-const initState = {
-  tableData: [],
-};
+// const initState = {
+//   tableData: [],
+// };
 
 const Model: ModelType = {
   namespace: 'formCategory',
 
-  state: initState,
+  state:{
+    tableData: [],
+  },
 
   effects: {
     *getCategories({ payload }, { call, put }) {
       const response = yield call(getCategories, payload);
-      console.log("response data : ", response.data)
+      console.log("get categories, response data : ", response.data)
       yield put({
         type: 'categoryList',
         payload: {
@@ -50,7 +55,7 @@ const Model: ModelType = {
       //   message.success('get成功');
     },
     *addCategory({ payload }, { call, put }) {
-
+      console.log("start call addcategory with payload : ", payload)
       const response = yield call(addOrUpdateCategories, payload);
       yield put({
         type: 'addOrUpdateCategories',
@@ -61,76 +66,64 @@ const Model: ModelType = {
     },
     *removeCategory({ payload }, { call, put }) {
       // console.log("start call dispatch addCategory")
-      console.log("removeCategory : ", payload)
-      const response = yield call(removeCategory, payload);
-      console.log("response data : ", response)
-      // if (response.code == 0) {
-        yield put({
-          type: 'removeCategory',
-          payload: response.data,
-        });
+      console.log(">>>>>>>>>>>> removeCategory with payload: ", payload)
+      if (payload){
+        const response = yield call(deleteCategoryServicePost, payload);
+        console.log("response data : ", response)
+        if (response.code == 0) {
+          yield put({
+            type: 'removeCategory',
+            payload:  response.data,
+          });
+
+          message.success('删除成功');
+        }
+
+      }
+  
       // }
 
         // console.log("cat list response: ", response)
-        // message.success('get成功');
+        
     },
   },
 
   reducers: {
     categoryList(state, { payload }) {
-
+      
+      state = {...state, ...payload}
+      console.log(">>>>>>>>>>> state after category list", state)
       return {
         ...state,
         ...payload,
       };
     },
     addOrUpdateCategories(state, { payload }) {
+      console.log("state after category list")
+      console.log({
+        ...state,
+        tableData: [...state?.tableData,...payload],
+        loading : false
+      });
       return {
         ...state,
         tableData: [...state?.tableData,...payload]
       }
-
-      // let newState = state;
-      // if (newState && newState.tableData.length > 0){
-      //   let duplicated = false;
-       
-      //   newState.tableData = newState.tableData.map(e => {
-      //     if (e.categoryId == payload.categoryId){
-      //       duplicated = true;
-      //       return payload
-      //     } else {
-      //       return e
-      //     }
-      //   } )
-
-      //   if (!duplicated){
-      //     newState.tableData = newState.tableData.concat(payload)
-      //   }
-
-        
-
-      // } else {
-      //   newState = {
-      //     tableData: [payload]
-      //   }
-       
-      // }
-
-      // return {
-      //   ...state,
-      //   ...newState,
-      // }
     },
     removeCategory(state, { payload }) {
-      console.log("current state", state);
-      console.log("payload :", payload);
-      // let newState = state;
+
       if (state && state.tableData.length > 0){
-        state.tableData = state.tableData.filter(e => e.categoryId != payload.key )
+        state.tableData = state.tableData.filter(e => e.key != payload.categoryId )
+
+        // 
+        
       }
-      return {
-        ...state
-      }
+      // const newState = state;
+      console.log(" >>>>>>>>>>>>>> state after remove", Object.assign({}, state))
+      return Object.assign({}, state);
+
+
+     
     },
 
   },

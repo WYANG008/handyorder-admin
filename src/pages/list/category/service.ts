@@ -8,26 +8,27 @@ export async function getCategories(params: any) {
 }
 
 export async function addOrUpdateCategories(params: any) {
-  console.log(params);
+  console.log("call service addOrUpdateCategories with params ",params);
   return request('/server/api/seller/category/addOrUpdate', {
     method: 'POST',
     data: params,
   });
 }
 
-export async function deleteCategory(params: any) {
-  console.log("requesting server removeCategories, ", params)
-  return request('/server/api/seller/category/delete/'+params, {
-    method: 'DELETE'
-  });
-}
+// export async function deleteCategoryService(params: any) {
+//   console.log("requesting server removeCategories, ", params)
+//   return request('/server/api/seller/category/delete/'+params, {
+//     method: 'DELETE'
+//   });
+// }
 
-export async function removeCategory(params: any) {
+export async function deleteCategoryServicePost(params: any) {
   console.log("requesting server removeCategories, ", params)
   return request('/server/api/seller/category/remove', {
     method: 'POST',
-    data: {
-      key: params
-    }
+    headers: {
+      "Content-Type": "application/json"
+    },
+    data: params
   });
 }

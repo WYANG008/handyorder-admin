@@ -27,18 +27,22 @@ const codeMessage = {
  * 异常处理程序
  */
 const errorHandler = (error: { response: Response }): Response => {
- 
+
   const { response } = error;
 
-  console.log("error",response)
+  console.log("error", response)
   if (response && response.status) {
-    const errorText = codeMessage[response.status] || response.statusText;
-    const { status, url } = response;
+    if (response.status != 400) {  // TODO: remove category, thow this error, not critical
+      const errorText = codeMessage[response.status] || response.statusText;
+      const { status, url } = response;
 
-    notification.error({
-      message: `请求错误 ${status}: ${url}`,
-      description: errorText,
-    });
+      notification.error({
+        message: `请求错误 ${status}: ${url}`,
+        description: errorText,
+      });
+    }
+
+
   } else if (!response) {
     notification.error({
       description: '您的网络发生异常，无法连接服务器',

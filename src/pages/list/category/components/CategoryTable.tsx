@@ -3,11 +3,10 @@ import { Button, Divider, Input, Popconfirm, Table, message, Modal, Form } from 
 import React from 'react';
 import { Dispatch } from 'redux';
 import styles from '../style.less';
-import {TableFormDateType} from '../data';
+import { TableFormDateType } from '../data';
 
 
 interface TableFormProps {
-  // form: FormInstance;
   loading: boolean;
   dispatch: Dispatch<any>;
   value: TableFormDateType[];
@@ -22,10 +21,8 @@ interface AddedCategory {
 
 interface TableFormState {
   clickedCancel: boolean;
-  loading: boolean;
   modalVisable: boolean;
   index: number;
-  cacheOriginData: any;
   addedCategory: AddedCategory;
 }
 
@@ -34,14 +31,11 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
   // console.log("value xxxxxxxxx : ",value)
 
   constructor(props: TableFormProps) {
-		super(props);
-		this.state = {
+    super(props);
+    this.state = {
       clickedCancel: false,
       modalVisable: false,
-			loading: false,
       index: 0,
-      // data: this.props.value,
-      cacheOriginData: {},
       addedCategory: {
         key: null,
         categoryName: "",
@@ -49,7 +43,7 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
       }
     };
   }
-  
+
   private showModal = () => {
     this.setState({
       modalVisable: true,
@@ -57,35 +51,35 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
   };
 
   private handleKeyPress = (key: string) => {
-		if (key === 'Enter' && this.state.addedCategory.categoryName && this.state.addedCategory.type)
-			this.handleOk();
+    if (key === 'Enter' && this.state.addedCategory.categoryName && this.state.addedCategory.type)
+      this.handleOk();
   };
-  
-  
-	private handleChange = (label: string, value: string = '') => {
-		switch (label) {
-			case "categoryName":
-				this.setState({
-					addedCategory: {
+
+
+  private handleChange = (label: string, value: string = '') => {
+    switch (label) {
+      case "categoryName":
+        this.setState({
+          addedCategory: {
             categoryName: value,
             type: this.state.addedCategory.type,
             key: this.state.addedCategory.key
           }
-				});
-				break;
-			case "type":
+        });
+        break;
+      case "type":
         this.setState({
-					addedCategory: {
+          addedCategory: {
             categoryName: this.state.addedCategory.categoryName,
             key: this.state.addedCategory.key,
             type: value
           }
-				});
-				break;
-			default:
-				break;
-		}
-	};
+        });
+        break;
+      default:
+        break;
+    }
+  };
 
 
 
@@ -95,17 +89,17 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
     const target = this.props.value?.filter(item => item.key === key)[0];
     if (target) {
       console.log("key", key)
-      console.log("target, ", target )
+      console.log("target, ", target)
       this.setState({
         addedCategory: {
-          key: target.key? Number(target.key) : null,
+          key: target.key ? Number(target.key) : null,
           categoryName: target.categoryName || "",
-          type: target.type||""
+          type: target.type || ""
         }
       })
       this.setState({
-        
-        modalVisable:true
+
+        modalVisable: true
       })
       console.log("nw state", this.state)
     }
@@ -113,35 +107,29 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
 
 
   handleOk = () => {
-    if(this.state.addedCategory.categoryName && this.state.addedCategory.type){
+    if (this.state.addedCategory.categoryName && this.state.addedCategory.type) {
       const payload = {
         categoryName: this.state.addedCategory.categoryName,
         categoryType: this.state.addedCategory.type,
         categoryId: this.state.addedCategory.key
       };
-      this.setState({
-        loading: true
-      })
-      console.log("paylaod ###########",payload)
+
       this.props.dispatch({
         type: 'formCategory/addCategory',
-        payload:payload
+        payload: payload
       });
       this.setState({
         addedCategory: {
-          categoryName:"",
+          categoryName: "",
           type: "",
           key: null
         }
       });
-
       setTimeout(() => {
         this.props.dispatch({
           type: 'formCategory/getCategories'
         });
-        this.setState({
-          loading: false
-        })
+
       }, 500);
     }
     this.setState({
@@ -149,25 +137,26 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
     });
   };
 
-  private remove = (key: string) => {
-    this.setState({
-      loading: true
-    })
-    this.props.dispatch({
-      type: 'formCategory/removeCategory',
-      payload:Number(key)
-    });
-    // this.setState({
-    //   loading: false
-    // })
-    setTimeout(() => {
+  private handleRemoveCategory = (e: React.MouseEvent<HTMLElement>, key: string) => {
+    e.preventDefault();
+
+    if (key) {
       this.props.dispatch({
-        type: 'formCategory/getCategories'
+        type: 'formCategory/removeCategory',
+        payload: {
+          key: Number(key)
+        }
       });
-      this.setState({
-        loading: false
-      })
-    }, 500);
+
+      setTimeout(() => {
+        this.props.dispatch({
+          type: 'formCategory/getCategories'
+        });
+
+      }, 500);
+
+    }
+
   };
 
   // private handleFieldChange = (
@@ -219,7 +208,7 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
       title: '操作',
       key: 'action',
       render: (text: string, record: TableFormDateType) => {
-        if (!!record.editable && this.state.loading) {
+        if (!!record.editable && this.props.loading) {
           return null;
         }
 
@@ -227,8 +216,11 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
           <span>
             <a onClick={e => this.updateRecord(e, record.key)}>编辑</a>
             <Divider type="vertical" />
-            <Popconfirm title="是否要删除此行？" onConfirm={() => this.remove(record.key)}>
-              <a>删除</a>
+            <Popconfirm title="是否要删除此行？" onConfirm={(e) => {
+              console.log(">>>>>>>>>>> wow >>>>>>>>>")
+              this.handleRemoveCategory(e, record.key)
+            }}>
+              <a >删除</a>
             </Popconfirm>
           </span>
         );
@@ -257,13 +249,13 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
     return (
       <>
         <Table<TableFormDateType>
-          loading={this.state.loading}
+          loading={this.props.loading}
           columns={this.columns}
           dataSource={this.props.value}
           pagination={false}
           rowClassName={record => (record.editable ? styles.editable : '')}
         />
-      
+
         <Button
           style={{ width: '100%', marginTop: 16, marginBottom: 8 }}
           type="dashed"
@@ -281,20 +273,20 @@ export default class CategoryTable extends React.Component<TableFormProps, Table
         >
           <Form {...formItemLayout}>
             <Form.Item label="categoryName">
-             <Input 
-              value={categoryName} 
-              onKeyPress={e => this.handleKeyPress(e.key)}
-							onChange={e => this.handleChange("categoryName", e.target.value)}
-            />
-          </Form.Item>
-          
-          <Form.Item label="type">
-             <Input value={type}
-              onKeyPress={e => this.handleKeyPress(e.key)}
-							onChange={e => this.handleChange("type", e.target.value)}/>
-          </Form.Item>
-       
-      </Form>
+              <Input
+                value={categoryName}
+                onKeyPress={e => this.handleKeyPress(e.key)}
+                onChange={e => this.handleChange("categoryName", e.target.value)}
+              />
+            </Form.Item>
+
+            <Form.Item label="type">
+              <Input value={type}
+                onKeyPress={e => this.handleKeyPress(e.key)}
+                onChange={e => this.handleChange("type", e.target.value)} />
+            </Form.Item>
+
+          </Form>
         </Modal>
       </>
     );

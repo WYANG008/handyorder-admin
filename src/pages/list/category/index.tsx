@@ -32,14 +32,6 @@ class Category extends Component<CategoryFormProps, CategoryState>  {
     console.log("reqFreq: ", this.reqRef)
   }
 
-  componentWillUpdate(nextProps, nextState) {
-    console.log("next props", nextProps)
-    console.log("next states", nextState)
-    // if (nextState.open == true && this.state.open == false) {
-    //   this.props.onWillOpen();
-    // }
-  }
-
   render() {
     const { formCategory,loading, dispatch } = this.props;
 
