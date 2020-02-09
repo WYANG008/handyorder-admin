@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { Form, Button, Input, Modal } from 'antd';
 
 import { TableListItem } from '../data';
+import {UploadFile} from 'antd/lib/upload/interface'
+import ImgFile from './ImgFile'
 
 export interface FormValueType extends Partial<TableListItem> {
-  productName: string;
-  productDescription: string;
-  productIcon: string;
-  productPrice: number;
-  productStock: number;
-  productStatus: number;
-  categoryType: number;
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  status: number;
+  category: string;
 }
 
 export interface UpdateFormProps {
@@ -32,19 +33,19 @@ const formLayout = {
 
 const UpdateForm: React.FC<UpdateFormProps> = props => {
   const [formVals, setFormVals] = useState<FormValueType>({
-    productId: props.values.productId || "",
-    productName: props.values.productName || "",
-    productPrice: props.values.productPrice || 0,
-    productStock: props.values.productStock || 0,
-    productStatus: props.values.productStatus || 0,
-    categoryType: props.values.categoryType || 0,
-    productDescription: "",
-    productIcon: "",
-
+    id: props.values.id,
+    name: props.values.name || "",
+    price: props.values.price || 0,
+    stock: props.values.stock || 0,
+    status: props.values.status || 0,
+    category: props.values.category || "",
+    description: props.values.description ||"",
   });
 
 
   const [form] = Form.useForm();
+
+  const [file, setFile] = React.useState<UploadFile[]>([]);
 
   const {
     onSubmit: handleUpdate,
@@ -57,19 +58,19 @@ const UpdateForm: React.FC<UpdateFormProps> = props => {
 
     return (
       <>
-        <FormItem name="productName" label="productName">
+        <FormItem name="name" label="name">
           <Input style={{ width: '100%' }} />
         </FormItem>
-        <FormItem name="productPrice" label="productPrice">
+        <FormItem name="price" label="price">
           <Input style={{ width: '100%' }} />
         </FormItem>
-        <FormItem name="productStock" label="productStock">
+        <FormItem name="stock" label="stock">
           <Input style={{ width: '100%' }} />
         </FormItem>
-        <FormItem name="productStatus" label="productStatus">
+        <FormItem name="status" label="status">
           <Input style={{ width: '100%' }} />
         </FormItem>
-        <FormItem name="categoryType" label="categoryType">
+        <FormItem name="category" label="category">
           <Input style={{ width: '100%' }} />
         </FormItem>
       </>
@@ -83,7 +84,19 @@ const UpdateForm: React.FC<UpdateFormProps> = props => {
     return (
       <>
         <Button onClick={() => handleUpdateModalVisible(false, values)}>取消</Button>
-        <Button type="primary" onClick={() =>onSubmit({ ...values, ...form.getFieldsValue()})}
+
+        <Button type="primary" onClick={() => {
+          if (file.length > 0) {
+            onSubmit({ ...values, ...form.getFieldsValue(), ...file[0].response.data})
+          } else {
+            onSubmit({ ...values, ...form.getFieldsValue()})
+          }
+         
+        }
+        
+        
+      
+      }
         >
           修改
           </Button>
@@ -108,15 +121,13 @@ const UpdateForm: React.FC<UpdateFormProps> = props => {
         {...formLayout}
         form={form}
         initialValues={{
-          productName: formVals.productName || "",
-          productPrice: formVals.productPrice || 0,
-          productStock: formVals.productStock || 0,
-          productStatus: formVals.productStatus || 0,
-          categoryType: formVals.categoryType || 0,
+         ...formVals
         }}
       >
         {renderContent()}
       </Form>
+
+      <ImgFile value={file} onChange={setFile}/>
     </Modal>
   );
 };

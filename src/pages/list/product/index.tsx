@@ -7,23 +7,15 @@ import CreateForm from './components/CreateForm';
 import UpdateForm, { FormValueType } from './components/UpdateForm';
 import { TableListItem } from './data';
 import { queryProduct, updateProduct, addProduct, removeProduct } from './service';
-
+// import {UploadFile} from 'antd/lib/upload/interface'
 /**
- * 添加节点
+ * 添加产品
  * @param fields
  */
 const handleAdd = async (fields: FormValueType) => {
   const hide = message.loading('正在添加');
   try {
-    await addProduct({
-      productName: fields.productName,
-      productPrice: fields.productPrice,
-      productStock: fields.productStock,
-      productDescription: fields.productDescription,
-      productIcon: fields.productIcon,
-      productStatus: fields.productStatus,
-      categoryType: fields.categoryType
-    });
+    await addProduct(({...fields}) as any);
     hide();
     message.success('添加成功');
     return true;
@@ -35,24 +27,13 @@ const handleAdd = async (fields: FormValueType) => {
 };
 
 /**
- * 更新节点
+ * 更新产品
  * @param fields
  */
 const handleUpdate = async (fields: FormValueType) => {
-  console.log("########## update fields, ", fields)
   const hide = message.loading('正在配置');
-  // console.log("after hide", )
   try {
-    await updateProduct({
-      productId: fields.productId,
-      productName: fields.productName,
-      productPrice: fields.productPrice,
-      productStock: fields.productStock,
-      productDescription: fields.productDescription,
-      productIcon: fields.productIcon,
-      productStatus: fields.productStatus,
-      categoryType: fields.categoryType
-    });
+    await updateProduct(({...fields}) as any);
     hide();
 
     message.success('配置成功');
@@ -65,16 +46,15 @@ const handleUpdate = async (fields: FormValueType) => {
 };
 
 /**
- *  删除节点
+ *  删除产品
  * @param selectedRows
  */
 const handleRemove = async (selectedRows: TableListItem[]) => {
   const hide = message.loading('正在删除');
-  console.log(">>>>>>>>>>>", selectedRows);
   if (!selectedRows) return true;
   try {
     await removeProduct({
-      productId: selectedRows.map(row => row.productId),
+      id: selectedRows.map(row => row.id),
     });
     hide();
     message.success('删除成功，即将刷新');
@@ -92,28 +72,37 @@ const TableList: React.FC<{}> = () => {
   const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
   const [formValues, setFormValues] = useState({});
   const actionRef = useRef<ActionType>();
+
+  // const [file, setFile] = React.useState<UploadFile[]>([]);
   const columns: ProColumns<TableListItem>[] = [
+    
+    {
+      title: '产品图片',
+      dataIndex: 'imgUrl',
+      key: 'imgUrl',
+      render: (text) => <img src={text as any} width="50px"/>//这里放后台返回的图片的路径或者整个<img/>  
+    },
     {
       title: '产品名称',
-      dataIndex: 'productName',
+      dataIndex: 'name',
     },
     {
       title: '价格',
-      dataIndex: 'productPrice',
+      dataIndex: 'price',
       sorter: true,
     },
     {
       title: '存量',
-      dataIndex: 'productStock',
+      dataIndex: 'stock',
 
       renderText: (val: string) => `${val} 个`,
     },
     {
       title: '状态',
-      dataIndex: 'productStatus',
+      dataIndex: 'status',
       valueEnum: {
-        0: { text: '已下架', status: 'Default' },
-        1: { text: '运行中', status: 'Processing' },
+        1: { text: '已下架', status: 'Default' },
+        0: { text: '运行中', status: 'Processing' },
         // 2: { text: '已上线', status: 'Success' },
         // 3: { text: '异常', status: 'Error' },
       },
@@ -121,7 +110,7 @@ const TableList: React.FC<{}> = () => {
 
     {
       title: '种类',
-      dataIndex: 'categoryType',
+      dataIndex: 'category',
     },
     {
       title: '更新时间',
@@ -167,7 +156,7 @@ const TableList: React.FC<{}> = () => {
       <ProTable<TableListItem>
         headerTitle="产品列表"
         actionRef={actionRef}
-        rowKey="productId"
+        rowKey="id"
         onChange={(_, _filter, _sorter) => {
           setSorter(`${_sorter.field}_${_sorter.order}`);
         }}
@@ -215,7 +204,7 @@ const TableList: React.FC<{}> = () => {
       />
       <CreateForm
         onSubmit={async value => {
-          const success = await handleAdd(value);
+          const success = await handleAdd((value) as any);
           if (success) {
             handleModalVisible(false);
             if (actionRef.current) {
